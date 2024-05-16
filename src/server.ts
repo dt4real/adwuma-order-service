@@ -12,8 +12,10 @@ import { verify } from 'jsonwebtoken';
 import compression from 'compression';
 import { checkConnection } from '@order/elasticsearch';
 import { appRoutes } from '@order/routes';
+import { createConnection } from '@order/queues/connection';
 import { Channel } from 'amqplib';
 import { Server } from 'socket.io';
+import { consumerReviewFanoutMessages } from '@order/queues/order.consumer';
 
 const SERVER_PORT = 4006;
 const log: Logger = winstonLogger(`${config.ELASTIC_SEARCH_URL}`, 'orderServer', 'debug');
@@ -62,7 +64,8 @@ const routesMiddleware = (app: Application): void => {
 };
 
 const startQueues = async (): Promise<void> => {
-  console.log('test');
+  orderChannel = await createConnection() as Channel;
+  await consumerReviewFanoutMessages(orderChannel);
 };
 
 const startElasticSearch = (): void => {
